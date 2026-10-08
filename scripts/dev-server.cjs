@@ -7,6 +7,7 @@ const MIME = {
   ".css": "text/css; charset=utf-8",
   ".js": "text/javascript; charset=utf-8",
   ".webp": "image/webp",
+  ".svg": "image/svg+xml",
   ".woff2": "font/woff2",
   ".txt": "text/plain; charset=utf-8",
 };
@@ -23,7 +24,9 @@ function createServer() {
         new URL(req.url, "http://localhost").pathname,
       );
       const relative = pathname === "/" ? "index.html" : pathname.slice(1);
-      const asset = /^assets\/[a-zA-Z0-9_-]+\.(webp|woff2|txt)$/.test(relative);
+      const asset = /^assets\/[a-zA-Z0-9_-]+\.(webp|woff2|txt|svg)$/.test(
+        relative,
+      );
       if (!asset && !["index.html", "style.css", "app.js"].includes(relative)) {
         res.writeHead(404);
         res.end("Not found");

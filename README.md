@@ -18,7 +18,7 @@ Open **http://127.0.0.1:4173**. Set `PORT` to choose another local port.
 
 ## What’s included
 
-- Devcon artwork, self-hosted Inter, responsive player and queue.
+- Devcon artwork, self-hosted Poppins, responsive player and queue.
 - In-page YouTube, Spotify, and SoundCloud embeds, loaded only after Play.
 - Event-driven next-track playback, with protection against stale player callbacks.
 - Link metadata discovery and manual fallback; duplicate detection and a two-track-per-name limit.
@@ -59,4 +59,4 @@ Serve `index.html`, `style.css`, `app.js`, and `assets/` from any HTTPS static h
 
 ## License and credits
 
-Original code and documentation: **[MIT](LICENSE)**. Inter uses the SIL Open Font License. Devcon brand graphics and third-party track artwork are **not** relicensed under MIT; see [third-party notices](THIRD_PARTY_NOTICES.md). This repository does not imply official Devcon endorsement.
+Original code and documentation: **[MIT](LICENSE)**. Poppins uses the SIL Open Font License. Devcon brand graphics and third-party track artwork are **not** relicensed under MIT; see [third-party notices](THIRD_PARTY_NOTICES.md). This repository does not imply official Devcon endorsement.

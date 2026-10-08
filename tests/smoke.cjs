@@ -59,7 +59,7 @@ fs.mkdirSync(out, { recursive: true });
       const metrics = await page.evaluate(() => ({
         width: innerWidth,
         scrollWidth: document.documentElement.scrollWidth,
-        font: document.fonts.check("500 14px Inter"),
+        font: document.fonts.check("500 14px Poppins"),
         bytes: performance
           .getEntriesByType("resource")
           .reduce((s, r) => s + r.encodedBodySize, 0),

@@ -1,19 +1,56 @@
 @font-face {
-  font-family: Inter;
+  font-family: "Poppins";
   font-style: normal;
-  font-weight: 400 800;
+  font-weight: 400;
   font-display: swap;
-  src: url("./assets/inter-latin.woff2") format("woff2");
+  src: url(./assets/poppins-latin-400.woff2) format("woff2");
+  unicode-range:
+    U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC,
+    U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212,
+    U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: "Poppins";
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url(./assets/poppins-latin-500.woff2) format("woff2");
+  unicode-range:
+    U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC,
+    U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212,
+    U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: "Poppins";
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url(./assets/poppins-latin-600.woff2) format("woff2");
+  unicode-range:
+    U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC,
+    U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212,
+    U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: "Poppins";
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url(./assets/poppins-latin-700.woff2) format("woff2");
+  unicode-range:
+    U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC,
+    U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212,
+    U+2215, U+FEFF, U+FFFD;
 }
 :root {
   color-scheme: dark;
-  --bg: #101210;
-  --surface: #171a17;
-  --text: #f2f2e9;
-  --muted: #a4aa9f;
+  --bg: #1a0d33;
+  --surface: #221144;
+  --text: #fff;
+  --muted: #dddae2;
   --line: #ffffff1c;
-  --accent: #d8ee9a;
-  --orange: #eab58d;
+  --accent: #834def;
+  --orange: #dddae2;
 }
 * {
   box-sizing: border-box;
@@ -26,7 +63,7 @@ body {
   margin: 0;
   background: var(--bg);
   color: var(--text);
-  font-family: Inter, system-ui, sans-serif;
+  font-family: Poppins, system-ui, sans-serif;
   font-size: 14px;
   -webkit-font-smoothing: antialiased;
 }
@@ -69,7 +106,7 @@ textarea {
 }
 input::placeholder,
 textarea::placeholder {
-  color: #939b90;
+  color: var(--muted);
 }
 button:focus-visible,
 a:focus-visible,
@@ -80,18 +117,6 @@ textarea:focus-visible {
 }
 [hidden] {
   display: none !important;
-}
-.wallpaper {
-  position: absolute;
-  inset: 0 0 auto;
-  height: 510px;
-  z-index: -1;
-  pointer-events: none;
-  background:
-    linear-gradient(180deg, #10121022, #101210 97%),
-    linear-gradient(90deg, #101210dd, #10121055),
-    var(--wallpaper-image, url("./assets/devcon8-bg.webp")) center 40% / cover;
-  opacity: 0.8;
 }
 .stage {
   max-width: 1440px;
@@ -120,7 +145,7 @@ textarea:focus-visible {
   text-decoration: none;
   font-size: 10px;
   letter-spacing: 0.16em;
-  color: #ced1c5;
+  color: var(--muted);
 }
 .edition span {
   color: var(--accent);
@@ -162,7 +187,7 @@ h1 {
 }
 .contribution-note {
   font-size: 12px;
-  color: #c1c7b8;
+  color: var(--muted);
   padding-bottom: 4px;
 }
 .room {
@@ -175,7 +200,7 @@ h1 {
   min-width: 0;
 }
 .player {
-  background: #1a201b;
+  background: var(--surface);
   overflow: hidden;
   position: relative;
 }
@@ -188,7 +213,7 @@ h1 {
   min-width: 0;
   position: relative;
   overflow: hidden;
-  background: #151a16;
+  background: var(--surface);
 }
 .artwork img {
   width: 100%;
@@ -218,7 +243,7 @@ h1 {
 }
 .player-copy p {
   font-size: 17px;
-  color: #c0c9b9;
+  color: var(--muted);
   margin: 0 0 28px;
 }
 .primary-play {
@@ -226,7 +251,7 @@ h1 {
   align-items: center;
   gap: 12px;
   background: var(--accent);
-  color: #172016;
+  color: var(--text);
   border: 0;
   padding: 0 19px;
   height: 46px;
@@ -234,7 +259,7 @@ h1 {
   font-size: 12px;
 }
 .primary-play:hover {
-  background: #e8ffac;
+  background: #925ff5;
 }
 .primary-play span {
   font-size: 10px;
@@ -246,7 +271,7 @@ h1 {
 }
 .player-frame {
   min-height: 280px;
-  background: #090a09;
+  background: var(--surface);
 }
 .player-frame iframe {
   display: block;
@@ -335,10 +360,10 @@ h1 {
   padding: 10px 4px;
 }
 .track.is-selected {
-  background: #d8ee9a07;
+  background: #834def18;
 }
 .track-number {
-  color: #8c9686;
+  color: var(--muted);
   font-size: 10px;
   font-variant-numeric: tabular-nums;
 }
@@ -370,7 +395,7 @@ h1 {
 }
 .track-provider {
   font-size: 9px;
-  color: #919b88;
+  color: var(--muted);
 }
 .play-track {
   width: 44px;
@@ -417,7 +442,7 @@ h1 {
 .add-row button {
   border: 0;
   background: var(--accent);
-  color: #172016;
+  color: var(--text);
   font-size: 27px;
   height: 46px;
   width: 46px;
@@ -476,7 +501,7 @@ h1 {
 }
 .chat {
   border: 1px solid var(--line);
-  background: #161916;
+  background: var(--surface);
   display: flex;
   flex-direction: column;
   height: 674px;
@@ -508,7 +533,7 @@ h1 {
 }
 .demo-label {
   font-size: 9px;
-  color: #bac2b1;
+  color: var(--muted);
   border: 1px solid var(--line);
   padding: 5px 7px;
   white-space: nowrap;
@@ -525,7 +550,7 @@ h1 {
 .chat-day {
   text-align: center;
   font-size: 9px;
-  color: #939e89;
+  color: var(--muted);
   letter-spacing: 0.05em;
   margin: 0 0 28px;
 }
@@ -561,14 +586,14 @@ h1 {
   font-weight: 500;
 }
 .chat-author time {
-  color: #8a9581;
+  color: var(--muted);
   font-size: 9px;
   font-weight: 400;
 }
 .chat-message p {
   font-size: 13px;
   line-height: 1.65;
-  color: #d2d7cb;
+  color: var(--muted);
   margin: 7px 0 0;
   overflow-wrap: anywhere;
   white-space: pre-wrap;
@@ -621,10 +646,10 @@ h1 {
   align-items: end;
   border: 1px solid #ffffff24;
   padding: 10px;
-  background: #0d100d;
+  background: var(--surface);
 }
 .composer:focus-within {
-  border-color: #d8ee9a77;
+  border-color: #834def;
 }
 .composer textarea {
   flex: 1;
@@ -640,12 +665,12 @@ h1 {
   min-width: 36px;
   border: 0;
   background: var(--accent);
-  color: #172016;
+  color: var(--text);
   font-size: 22px;
 }
 .chat-form p {
   font-size: 9px;
-  color: #99a58d;
+  color: var(--muted);
   margin: 10px 0 0;
 }
 footer {
@@ -654,7 +679,7 @@ footer {
   border-top: 1px solid var(--line);
   margin-top: 30px;
   padding: 18px 0 24px;
-  color: #919a87;
+  color: var(--muted);
   font-size: 10px;
 }
 footer span:last-child {
@@ -834,4 +859,81 @@ footer span:last-child {
   html {
     scroll-behavior: auto;
   }
+}
+
+/* Devcon design-team colors. The existing player/queue composition stays. */
+a {
+  color: var(--accent);
+}
+.brand {
+  color: var(--text);
+}
+.chat-jump {
+  font-weight: 600;
+}
+.page-heading .eyebrow,
+.player-copy .eyebrow {
+  color: var(--muted);
+}
+.primary-play,
+.add-row button,
+.composer button,
+.play-track,
+.icon-button,
+.playback-bar button {
+  background: var(--accent);
+  color: #fff;
+  font-weight: 700;
+}
+.primary-play:hover,
+.add-row button:hover,
+.composer button:hover,
+.play-track:hover {
+  background: #925ff5;
+  color: #fff;
+}
+.play-track {
+  width: 40px;
+  height: 40px;
+  justify-self: end;
+}
+.icon-button {
+  width: 36px;
+  height: 36px;
+  font-size: 17px;
+}
+.playback-bar button {
+  padding: 0 14px;
+}
+.track.is-selected .track-number {
+  color: var(--text);
+}
+.chat-symbol {
+  color: var(--text);
+}
+.avatar,
+.avatar.tone-1,
+.avatar.tone-2 {
+  background: #834def33;
+  color: #fff;
+  border: 1px solid #834def66;
+}
+.chat-track {
+  background: var(--accent);
+  color: #fff;
+  font-weight: 700;
+}
+.chat-track > span:last-child {
+  color: #fff;
+}
+.chat-track strong {
+  font-weight: 700;
+}
+.chat-form p,
+.chat-day,
+.chat-author time {
+  color: var(--muted);
+}
+.composer {
+  background: var(--bg);
 }
