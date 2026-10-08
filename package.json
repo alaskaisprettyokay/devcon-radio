@@ -1,0 +1,21 @@
+{
+  "name": "devcon-radio",
+  "version": "0.1.0",
+  "private": true,
+  "description": "A lightweight Devcon music queue and listening-room prototype.",
+  "license": "MIT",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "dev": "node scripts/dev-server.cjs",
+    "start": "node scripts/dev-server.cjs",
+    "test": "node tests/smoke.cjs",
+    "format": "prettier --write index.html style.css app.js scripts tests *.md package.json .github/workflows/ci.yml",
+    "format:check": "prettier --check index.html style.css app.js scripts tests *.md package.json .github/workflows/ci.yml"
+  },
+  "devDependencies": {
+    "playwright": "1.58.2",
+    "prettier": "3.6.2"
+  }
+}

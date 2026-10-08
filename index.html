@@ -1,0 +1,188 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <meta name="theme-color" content="#101210" />
+    <meta
+      name="description"
+      content="The sound of Devcon. Bring two tracks. Find something new."
+    />
+    <title>Devcon Radio</title>
+    <link
+      rel="preload"
+      href="./assets/inter-latin.woff2"
+      as="font"
+      type="font/woff2"
+      crossorigin
+    />
+    <link
+      rel="preload"
+      href="./assets/yaeji.webp"
+      as="image"
+      fetchpriority="high"
+    />
+    <link rel="stylesheet" href="./style.css?v=devcon-link-2" />
+    <script src="./app.js?v=astra-1" defer></script>
+  </head>
+  <body>
+    <div class="wallpaper" aria-hidden="true"></div>
+    <main class="stage">
+      <header class="topbar">
+        <a
+          class="brand"
+          href="https://devcon.org/en/"
+          target="_blank"
+          rel="noopener noreferrer"
+          aria-label="Devcon website (opens in a new tab)"
+          ><img
+            src="./assets/devcon8-logo.webp"
+            width="154"
+            height="68"
+            alt="Devcon 8 India"
+        /></a>
+        <a class="chat-jump" href="#chat">Chat <span>↗</span></a>
+      </header>
+      <div class="page-heading">
+        <div>
+          <span class="eyebrow">A PLAYLIST BY ALL OF US</span>
+          <h1>Devcon Radio<span class="heading-dot">.</span></h1>
+        </div>
+        <span class="contribution-note">Two tracks. Your taste.</span>
+      </div>
+      <div class="room">
+        <section class="music" aria-label="Music and queue">
+          <section class="player" id="player" aria-label="Selected track">
+            <div class="player-poster" id="player-poster">
+              <div class="artwork" id="disc"></div>
+              <div class="player-copy">
+                <span class="eyebrow" id="player-state">ON DECK</span>
+                <h2 id="player-title">Raingurl</h2>
+                <p id="player-artist">Yaeji</p>
+                <button id="main-play" class="primary-play" type="button">
+                  <span aria-hidden="true">▶</span> Play track</button
+                ><span class="selected-source" id="selected-source"
+                  >YouTube</span
+                >
+              </div>
+            </div>
+            <div id="player-frame" class="player-frame" hidden></div>
+            <div id="playback-bar" class="playback-bar" hidden>
+              <span id="playback-title"></span
+              ><button id="next" type="button" aria-label="Next track">
+                Next <span aria-hidden="true">↗</span>
+              </button>
+            </div>
+          </section>
+          <div id="playback-status" class="playback-status" role="status"></div>
+          <div class="queue-head">
+            <h2>Up next <span id="song-count">3 tracks</span></h2>
+            <button
+              id="export"
+              class="icon-button"
+              type="button"
+              aria-label="Download playlist"
+              title="Download playlist"
+            >
+              ↓
+            </button>
+          </div>
+          <ol id="tracks" class="tracks"></ol>
+          <form id="drop" class="drop" autocomplete="off">
+            <div class="drop-heading">
+              <label for="url">Add your track</label
+              ><span id="remaining">2 left</span>
+            </div>
+            <div class="add-row">
+              <input
+                id="url"
+                name="url"
+                required
+                type="url"
+                placeholder="Paste a song link…"
+                aria-label="Song link"
+              /><button type="submit" id="submit" aria-label="Add track">
+                +
+              </button>
+            </div>
+            <div id="add-details" class="add-details" hidden>
+              <input
+                id="name"
+                name="name"
+                maxlength="40"
+                placeholder="Your name"
+                aria-label="Contributor name"
+              />
+              <div
+                id="metadata-preview"
+                class="metadata-preview"
+                aria-live="polite"
+              ></div>
+              <div id="manual-fields" hidden>
+                <input
+                  id="artist"
+                  name="artist"
+                  maxlength="80"
+                  placeholder="Artist"
+                  aria-label="Artist"
+                /><input
+                  id="title"
+                  name="title"
+                  maxlength="100"
+                  placeholder="Track title"
+                  aria-label="Track title"
+                />
+              </div>
+            </div>
+            <p id="form-message" role="status"></p>
+          </form>
+        </section>
+        <aside id="chat" class="chat" aria-labelledby="chat-title">
+          <header class="chat-header">
+            <div>
+              <span class="chat-symbol" aria-hidden="true">↳</span>
+              <h2 id="chat-title">The room</h2>
+            </div>
+            <span
+              class="demo-label"
+              title="Example conversation. New messages are saved in this browser."
+              >Chat preview</span
+            >
+          </header>
+          <div
+            class="chat-log"
+            id="chat-log"
+            role="log"
+            aria-label="Room conversation"
+            aria-live="polite"
+          ></div>
+          <form id="chat-form" class="chat-form" autocomplete="off">
+            <input
+              id="chat-name"
+              maxlength="40"
+              aria-label="Chat display name"
+              placeholder="Your name"
+              required
+            />
+            <div class="composer">
+              <textarea
+                id="chat-input"
+                maxlength="1000"
+                rows="2"
+                placeholder="Say something…"
+                aria-label="Message"
+                required
+              ></textarea
+              ><button type="submit" aria-label="Send message">↑</button>
+            </div>
+            <p id="chat-status" role="status">Messages stay in this browser.</p>
+          </form>
+        </aside>
+      </div>
+      <footer>
+        <span>Curated by people, not algorithms.</span
+        ><span>DEVCON × SUBCULT</span>
+      </footer>
+    </main>
+  </body>
+</html>
