@@ -823,6 +823,37 @@ $("#chat-log").addEventListener("click", async (e) => {
 document.addEventListener("visibilitychange", () => {
   if (document.visibilityState === "visible") pollChat();
 });
+// Optional hosted chat. When a Chatango room name is configured, Chatango
+// provides the chat and its own moderation instead of the built-in room.
+function mountChatango(room) {
+  document.querySelector("#chat").classList.add("is-hosted");
+  for (const sel of ["#chat-log", "#chat-notice", "#chat-form"])
+    $(sel).hidden = true;
+  const chip = $("#chat-state");
+  chip.textContent = "Chatango";
+  chip.dataset.live = "true";
+  chip.title = "Chat is provided by Chatango.";
+  const mount = $("#chatango-mount");
+  mount.hidden = false;
+  const script = document.createElement("script");
+  script.id = "cid0020000" + Math.floor(Math.random() * 1e12);
+  script.dataset.cfasync = "false";
+  script.async = true;
+  script.src = "https://st.chatango.com/js/gz/emb.js";
+  script.style.cssText = "width:100%;height:100%;";
+  script.textContent = JSON.stringify({
+    handle: room,
+    arch: "js",
+    styles: { a: "834def", b: 100, c: "FFFFFF", d: "1A0D33", k: "834DEF" },
+  });
+  mount.append(script);
+}
+const chatangoRoom = (
+  document.querySelector('meta[name="chatango-room"]')?.content || ""
+).trim();
 showSelected();
-renderChat();
-pollChat();
+if (/^[a-z0-9-]{1,30}$/i.test(chatangoRoom)) mountChatango(chatangoRoom);
+else {
+  renderChat();
+  pollChat();
+}

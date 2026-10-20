@@ -61,6 +61,9 @@ function createServer(options = {}) {
   const trustProxy = options.trustProxy ?? process.env.TRUST_PROXY === "1";
   const allowOrigin =
     options.allowOrigin ?? process.env.CHAT_ALLOW_ORIGIN ?? "";
+  // Optional: serve the page with a Chatango room instead of the built-in chat.
+  const rawRoom = options.chatangoRoom ?? process.env.CHATANGO_ROOM ?? "";
+  const chatangoRoom = /^[a-z0-9-]{1,30}$/i.test(rawRoom) ? rawRoom : "";
   const chat =
     options.chat ||
     createChat({
@@ -194,7 +197,16 @@ function createServer(options = {}) {
         res.end("Not found");
         return;
       }
-      const body = await fs.readFile(path.join(ROOT, relative));
+      let body = await fs.readFile(path.join(ROOT, relative));
+      if (relative === "index.html" && chatangoRoom)
+        body = Buffer.from(
+          body
+            .toString("utf8")
+            .replace(
+              '<meta name="chatango-room" content="" />',
+              `<meta name="chatango-room" content="${chatangoRoom}" />`,
+            ),
+        );
       res.writeHead(200, {
         "Content-Type":
           MIME[path.extname(relative)] || "application/octet-stream",
