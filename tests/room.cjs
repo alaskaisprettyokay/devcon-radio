@@ -25,7 +25,7 @@ const until = async (fn, label, ms = 9000) => {
 };
 
 (async () => {
-  const server = createServer({ modToken: TOKEN });
+  const server = createServer({ modToken: TOKEN, chatangoRoom: "off" });
   await new Promise((r) => server.listen(0, "127.0.0.1", r));
   const base = `http://127.0.0.1:${server.address().port}`;
   const browser = await chromium.launch({

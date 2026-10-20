@@ -79,21 +79,50 @@ fs.mkdirSync(out, { recursive: true });
     assert.ok((await page.locator("#tracks li").count()) >= 3);
     results.push({ test: "tracks and player still render", ok: true });
 
-    // A bad room name is ignored rather than injected.
+    // A bad room name is ignored: the page keeps its configured default room.
     const bad = createServer({
       modToken: "x",
       chatangoRoom: '"><script>x</script>',
     });
     await new Promise((r) => bad.listen(0, "127.0.0.1", r));
     const ctx2 = await browser.newContext();
+    await ctx2.route("**/st.chatango.com/**", (r) =>
+      r.fulfill({ contentType: "text/javascript", body: "" }),
+    );
     const p2 = await ctx2.newPage();
     await p2.goto(`http://127.0.0.1:${bad.address().port}`, {
-      waitUntil: "networkidle",
+      waitUntil: "domcontentloaded",
     });
-    assert.equal(await p2.locator("#chat-state").textContent(), "Live");
-    assert.equal(await p2.locator("#chatango-mount script").count(), 0);
+    const handle = await p2.evaluate(
+      () =>
+        JSON.parse(document.querySelector("#chatango-mount script").textContent)
+          .handle,
+    );
+    assert.equal(handle, "devcon");
+    assert.equal(
+      await p2.locator("script", { hasText: "<script>" }).count(),
+      0,
+    );
     await new Promise((r) => bad.close(r));
     results.push({ test: "invalid room name is rejected", ok: true });
+
+    // "off" forces the built-in room even though the page names a Chatango room.
+    const off = createServer({ modToken: "x", chatangoRoom: "off" });
+    await new Promise((r) => off.listen(0, "127.0.0.1", r));
+    const ctx3 = await browser.newContext();
+    const p3 = await ctx3.newPage();
+    await p3.goto(`http://127.0.0.1:${off.address().port}`, {
+      waitUntil: "networkidle",
+    });
+    await p3.waitForFunction(
+      () => document.querySelector("#chat-state")?.textContent === "Live",
+    );
+    assert.equal(await p3.locator("#chatango-mount script").count(), 0);
+    await new Promise((r) => off.close(r));
+    results.push({
+      test: "CHATANGO_ROOM=off forces the built-in room",
+      ok: true,
+    });
   } finally {
     await browser.close();
     await new Promise((r) => server.close(r));

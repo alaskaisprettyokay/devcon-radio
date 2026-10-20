@@ -63,7 +63,10 @@ function createServer(options = {}) {
     options.allowOrigin ?? process.env.CHAT_ALLOW_ORIGIN ?? "";
   // Optional: serve the page with a Chatango room instead of the built-in chat.
   const rawRoom = options.chatangoRoom ?? process.env.CHATANGO_ROOM ?? "";
-  const chatangoRoom = /^[a-z0-9-]{1,30}$/i.test(rawRoom) ? rawRoom : "";
+  // "off" forces the built-in room even when the page names a Chatango room.
+  const chatangoRoom =
+    /^[a-z0-9-]{1,30}$/i.test(rawRoom) && rawRoom !== "off" ? rawRoom : "";
+  const forceBuiltIn = rawRoom === "off";
   const chat =
     options.chat ||
     createChat({
@@ -198,12 +201,12 @@ function createServer(options = {}) {
         return;
       }
       let body = await fs.readFile(path.join(ROOT, relative));
-      if (relative === "index.html" && chatangoRoom)
+      if (relative === "index.html" && (chatangoRoom || forceBuiltIn))
         body = Buffer.from(
           body
             .toString("utf8")
             .replace(
-              '<meta name="chatango-room" content="" />',
+              /<meta name="chatango-room" content="[^"]*" \/>/,
               `<meta name="chatango-room" content="${chatangoRoom}" />`,
             ),
         );

@@ -2,11 +2,11 @@
 
 A lightweight music queue and chat prototype for Devcon, built by Subcult. Paste a song link, contribute two tracks, and listen in the page.
 
-**[Try the demo](https://player.subcult.music/demos/devcon-playlist/)**
+**[Try the demo](https://player.subcult.music/previews/devcon-radio-chatango/)**
 
 ## Run locally
 
-Requires Node.js 22 or newer. No accounts, API keys, install step, or build step needed to run the app.
+Requires Node.js 22 or newer. No install or build step is needed to run the app. Chat is provided by a Chatango room (configured in `index.html`); the repository can also run its own chat server (see below).
 
 ```sh
 git clone https://github.com/alaskaisprettyokay/devcon-radio.git
@@ -67,15 +67,15 @@ Open `http://127.0.0.1:4173/mod` and enter the token. If `CHAT_MOD_TOKEN` is not
 | `CHAT_ALLOW_ORIGIN` | Allow a page on another origin to call the room API (static page plus separate server). Set the page’s `<meta name="chat-api">` to the server URL. |
 | `HOST`, `PORT`      | Listen address (default `127.0.0.1:4173`).                                                                                                         |
 
-### Use Chatango instead of the built-in chat
+### Chatango (the default) and the built-in chat
 
-If you would rather run chat on Chatango (hosted, with its own moderation panel), the page can hand the whole chat panel over to a Chatango room:
+**The page ships configured for the Chatango room `devcon`**, so it deploys as a plain static site with no chat server to run. To use a different room, change the room name in `<meta name="chatango-room" content="devcon" />` in `index.html`. To use the built-in room server instead, set the meta content to empty (static hosts) or run `CHATANGO_ROOM=off npm start`. To set up a Chatango room:
 
 1. Create a free group at [chatango.com](https://chatango.com/creategroup) with an account the organizers own. Note the room name (letters, numbers and hyphens, up to 30).
 2. Serve the page with the name set, either `CHATANGO_ROOM=your-room npm start`, or edit `<meta name="chatango-room" content="your-room" />` in `index.html` for a static host.
 3. In the group’s admin settings, match the built-in rules: block links and rich content, switch on spam and repeat protection, add banned words, disable private messages, and set slow mode. The page only embeds the room; **these settings live in Chatango and are not enforced by this repository.**
 
-When a room name is set, the built-in room, its filters and `/mod` are not used. Chatango loads its own scripts and ads policy from `st.chatango.com`, and its styling cannot be fully controlled from this page. This path has been tested with a stubbed Chatango script only; check a real room in two browsers and on a phone before relying on it.
+When a room name is set (the default), the built-in room, its filters and `/mod` are not used. Chatango loads its own scripts and ads policy from `st.chatango.com`, and its styling cannot be fully controlled from this page. This path has been tested with a stubbed Chatango script only; check a real room in two browsers and on a phone before relying on it.
 
 **Limits to be aware of**
 
