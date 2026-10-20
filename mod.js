@@ -52,7 +52,7 @@ function time(ts) {
 
 function messageRow(m, held) {
   const why = m.reasons?.length
-    ? `<span class="why">Held: ${esc(m.reasons.join(", "))}</span>`
+    ? `<span class="why">Hidden: ${esc(m.reasons.join(", "))}</span>`
     : "";
   const reports = m.reports
     ? `<span>${m.reports} report${m.reports > 1 ? "s" : ""}</span>`
@@ -76,7 +76,7 @@ function render(q) {
   $("#held-count").textContent = q.held.length ? `(${q.held.length})` : "";
   $("#held").innerHTML = q.held.length
     ? q.held.map((m) => messageRow(m, true)).join("")
-    : '<li class="empty">Nothing waiting.</li>';
+    : '<li class="empty">Nothing hidden. Chat is moderating itself.</li>';
   $("#recent").innerHTML = q.recent.length
     ? q.recent.map((m) => messageRow(m, false)).join("")
     : '<li class="empty">No messages yet.</li>';

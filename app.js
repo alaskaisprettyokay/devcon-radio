@@ -675,7 +675,7 @@ function renderChatState() {
   if (chatUi.live) {
     if (banned) text = "You can no longer post in this room.";
     else if (muted)
-      text = `A moderator has paused your messages until ${clock(mutedUntil)}.`;
+      text = `Your messages are paused until ${clock(mutedUntil)}.`;
     else if (locked) text = "Chat is paused by the organizers.";
     else if (slowSeconds)
       text = `Slow mode: one message every ${slowSeconds} seconds.`;
@@ -687,7 +687,7 @@ function renderChatState() {
   $("#chat-form button[type=submit]").disabled = blocked;
   if (!chatUi.sending && !$("#chat-status").dataset.error)
     $("#chat-status").textContent = chatUi.live
-      ? "Be kind. Moderators can remove messages."
+      ? "Be kind. Spam and scams are blocked automatically."
       : "Messages stay in this browser.";
 }
 
@@ -773,8 +773,8 @@ $("#chat-form").addEventListener("submit", async (e) => {
     const data = await res.json().catch(() => ({}));
     if (res.ok && data.ok) {
       $("#chat-input").value = "";
-      if (data.status === "held")
-        chatError("Sent. A moderator will look at it before others see it.");
+      if (data.linkRemoved)
+        chatError("Posted. Links are removed from chat messages.");
       chatUi.rev = 0;
       await pollChat();
       renderChat(true);

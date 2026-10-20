@@ -90,38 +90,45 @@ const until = async (fn, label, ms = 9000) => {
     );
     results.push({ test: "a message reaches another visitor", ok: true });
 
-    // 2. A link is held: invisible to B, flagged to A, reviewable by the moderator.
-    await say(a.page, "Maya", "claim at https://evil.example");
+    // 2. Links are removed automatically; nobody has to approve anything.
+    await say(a.page, "Maya", "claim at https://evil.example now");
     await until(
-      async () => (await a.page.locator(".chat-held").count()) === 1,
-      "A sees held notice",
+      async () => (await texts(b.page)).includes("claim at [link removed] now"),
+      "link removed and posted",
     );
-    await new Promise((r) => setTimeout(r, 3200));
     assert.ok(
       !(await texts(b.page)).some((t) => t.includes("evil.example")),
-      "held text leaked",
+      "link leaked",
     );
-    await until(
-      async () => (await mod.locator("#held .item").count()) === 1,
-      "mod sees held item",
+    assert.match(
+      await a.page.locator("#chat-status").textContent(),
+      /Links are removed/,
     );
-    await mod.locator('#held [data-act="approve"]').click();
-    await until(
-      async () => (await texts(b.page)).some((t) => t.includes("evil.example")),
-      "approved shows",
-    );
-    results.push({ test: "held message review and approve", ok: true });
+    results.push({ test: "links are removed automatically", ok: true });
 
-    // 3. Delete removes it for everyone.
+    // 2b. Scam phrases are refused with a clear reason.
+    await say(a.page, "Maya", "free ETH airdrop for all");
+    await until(
+      async () =>
+        /scam/i.test(await a.page.locator("#chat-status").textContent()),
+      "scam refused",
+    );
+    assert.ok(
+      !(await texts(b.page)).some((t) => t.includes("airdrop")),
+      "scam leaked",
+    );
+    results.push({ test: "scam phrases are refused", ok: true });
+
+    // 3. Optional override: an organizer can still delete.
     await mod
-      .locator('#recent .item:has-text("evil.example") [data-act="delete"]')
+      .locator('#recent .item:has-text("link removed") [data-act="delete"]')
       .click();
     await until(
       async () =>
-        !(await texts(b.page)).some((t) => t.includes("evil.example")),
+        !(await texts(b.page)).includes("claim at [link removed] now"),
       "deleted hides",
     );
-    results.push({ test: "moderator delete", ok: true });
+    results.push({ test: "optional organizer delete", ok: true });
 
     // 4. Pause chat stops the other visitor; resume restores.
     await mod.click("#lock");

@@ -36,7 +36,7 @@ No audio files are hosted by this project. It embeds the original providers. Ope
 
 ## Chat and moderation
 
-`npm run dev` starts the page **and** a small room server (Node 22, no extra packages). Visitors share one live chat. Organizers moderate from `/mod`.
+`npm run dev` starts the page **and** a small room server (Node 22, no extra packages). Visitors share one live chat. Spam, links and scams are handled automatically; `/mod` is an optional override.
 
 ```sh
 CHAT_MOD_TOKEN='choose-a-long-random-token' CHAT_DATA_DIR=./chat-data npm run dev
@@ -46,14 +46,15 @@ Open `http://127.0.0.1:4173/mod` and enter the token. If `CHAT_MOD_TOKEN` is not
 
 **What visitors get:** messages appear for everyone within a few seconds, with clear notices when chat is paused, slow mode is on, or they have been muted or banned. Each message from someone else has a **Report** link.
 
-**What happens automatically**
+**What happens automatically (no moderator needed)**
 
 - Rate limit per browser (5 messages per 15 seconds) and per network address (60 per minute), duplicate-message and character-spam checks, 500-character limit.
-- Messages with **links, invite links, or wallet-scam phrases** (seed phrase, airdrop, giveaway, “DM me”) are **held for a moderator**. The sender sees them marked as waiting; nobody else does.
-- A short starter blocklist refuses abusive phrases outright, including spaced-out spellings. Add your own terms, one per line, with `CHAT_BLOCKLIST=./blocklist.txt`.
-- Three reports from different browsers hold a message for review.
+- **Links, invite links and bare domains are removed** from a message (it posts as `[link removed]`); a message that is only links is refused.
+- **Wallet-scam phrases** (seed phrase, private key, airdrop, giveaway, “DM me”, free ETH) are refused outright, as are phrases on the blocklist (including spaced-out spellings). Add your own terms, one per line, with `CHAT_BLOCKLIST=./blocklist.txt`.
+- **Repeat offenders are muted automatically.** Three refused messages in 10 minutes mutes the sender for 2 minutes, then 10, 30 and 60 on repeat.
+- **Three reports from different browsers hide a message** (and count as a strike against its author). Hidden messages stay hidden unless an organizer restores them.
 
-**What moderators can do** (`/mod`): approve or delete held messages, delete any message, mute a browser for 10 minutes, ban a browser (removes its messages), restore someone, pause all chat, and set slow mode. Every moderator action is appended to `mod-log.jsonl` in `CHAT_DATA_DIR`.
+**Optional organizer controls** (`/mod`, needs the token): pause all chat, set slow mode, delete any message, mute or ban a browser, restore someone, and restore a message that was hidden by reports. The room runs without anyone using them. Every organizer action is appended to `mod-log.jsonl` in `CHAT_DATA_DIR`.
 
 **Environment**
 
@@ -69,7 +70,7 @@ Open `http://127.0.0.1:4173/mod` and enter the token. If `CHAT_MOD_TOKEN` is not
 **Limits to be aware of**
 
 - There are no accounts. A visitor is a random id kept in their browser, so a banned person can return by clearing site data. Mute, slow mode, per-network rate limits and pausing chat are the backstops; for a hostile crowd, add sign-in before relying on bans.
-- Word filters are a starter list, not a moderation service. Human moderators are expected for the event.
+- Word filters are a starter list, not a moderation service. They catch the common event-chat abuse (links, wallet scams, flooding, slurs on the list) but not every insult. A hosted moderation API could be added as another automatic layer.
 - One server process holds the room. It is built for a conference-sized crowd, not horizontal scaling.
 - Chat text is not sent to any third-party service.
 

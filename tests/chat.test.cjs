@@ -56,34 +56,59 @@ test("duplicates and character spam are refused", () => {
   assert.equal(chat.post(msg("aaaaaaaaaaaaaaaa")).code, "spam");
 });
 
-test("links, invites and wallet scams are held, not shown", () => {
+test("links and invites are removed automatically and the rest is posted", () => {
+  const chat = createChat({ now: clock() });
+  const cases = [
+    ["check https://evil.example/claim now", "check [link removed] now"],
+    ["join t.me/scam today", "join [link removed] today"],
+    ["visit mysite.xyz for more", "visit [link removed] for more"],
+  ];
+  cases.forEach(([input, expected], i) => {
+    const r = chat.post(msg(input, `c${i}`));
+    assert.equal(r.ok, true, input);
+    assert.equal(r.message.text, expected);
+    assert.equal(r.linkRemoved, true);
+  });
+  assert.equal(
+    chat.post(msg("www.phish.com discord.gg/abc", "only")).code,
+    "blocked",
+    "a message that is only links is refused",
+  );
+  const texts = chat.list({ clientId: "z" }).messages.map((m) => m.text);
+  assert.ok(texts.every((t) => !/https?:|\.xyz|t\.me/.test(t)));
+  assert.equal(chat.mod.queue().held.length, 0, "nothing waits for a person");
+});
+
+test("wallet-scam phrases are refused outright", () => {
   const chat = createChat({ now: clock() });
   for (const [i, text] of [
-    "check https://evil.example/claim",
-    "join t.me/scam now",
     "send your seed phrase to verify",
     "free ETH airdrop",
-    "visit mysite.xyz",
+    "DM me for the giveaway",
   ].entries()) {
-    const r = chat.post(msg(text, `c${i}`));
-    assert.equal(r.status, "held", text);
+    assert.equal(chat.post(msg(text, `s${i}`)).code, "blocked", text);
   }
-  assert.equal(chat.list({ clientId: "nobody" }).messages.length, 0);
-  assert.equal(chat.mod.queue().held.length, 5);
+  assert.equal(chat.list({ clientId: "z" }).messages.length, 0);
 });
 
-test("the author still sees their held message; others do not", () => {
-  const chat = createChat({ now: clock() });
-  chat.post(msg("see https://x.example", "author"));
-  assert.equal(chat.list({ clientId: "author" }).messages[0].held, true);
-  assert.equal(chat.list({ clientId: "other" }).messages.length, 0);
-});
-
-test("approving a held message publishes it", () => {
-  const chat = createChat({ now: clock() });
-  const { message } = chat.post(msg("our site https://devcon.org", "a"));
-  assert.equal(chat.mod.approve(message.id, "mod").ok, true);
-  assert.equal(chat.list({ clientId: "z" }).messages.length, 1);
+test("repeated refused messages mute the sender automatically, longer each time", () => {
+  const now = clock();
+  const chat = createChat({ now, clientLimit: { count: 100, windowMs: 1000 } });
+  const bad = (n) => chat.post(msg(`free ETH airdrop ${n}`, "spammer"));
+  assert.equal(bad(1).code, "blocked");
+  assert.equal(bad(2).code, "blocked");
+  assert.match(bad(3).error, /paused for you for 2 minutes/);
+  assert.equal(chat.post(msg("sorry", "spammer")).code, "muted");
+  now.advance(2 * 60000 + 1);
+  assert.equal(chat.post(msg("sorry about that", "spammer")).ok, true);
+  bad(4);
+  bad(5);
+  assert.match(bad(6).error, /10 minutes/);
+  assert.equal(
+    chat.post(msg("hello", "friend")).ok,
+    true,
+    "others are unaffected",
+  );
 });
 
 test("blocklisted phrases are refused, including spaced-out evasions", () => {
@@ -173,6 +198,11 @@ test("enough reports from different people hold a message for review", () => {
   chat.report({ id: message.id, reporterId: "r3" });
   assert.equal(chat.list({ clientId: "z" }).messages.length, 0);
   assert.deepEqual(chat.mod.queue().held[0].reasons, ["reported"]);
+  assert.equal(
+    chat.list({ clientId: "author" }).messages.length,
+    0,
+    "hidden for the author too",
+  );
 });
 
 test("polling returns no payload when nothing changed", () => {
