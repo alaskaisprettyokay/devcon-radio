@@ -583,44 +583,212 @@ const DEMO_CHAT = [
     time: "12:44",
   },
 ];
+/* Chat. Talks to the room server when it is reachable, otherwise shows the
+   browser-only preview so a static copy of the page still works. */
+const CLIENT_KEY = "devcon-chat-client-v1";
+const CHAT_API = (
+  document.querySelector('meta[name="chat-api"]')?.content || ""
+).replace(/\/$/, "");
+let clientId = read(CLIENT_KEY, "");
+if (typeof clientId !== "string" || clientId.length < 16) {
+  clientId =
+    globalThis.crypto?.randomUUID?.() ||
+    Array.from({ length: 4 }, () =>
+      Math.random().toString(36).slice(2, 10),
+    ).join("");
+  save(CLIENT_KEY, clientId);
+}
 let messages = read(CHAT_STORE, []);
 if (!Array.isArray(messages)) messages = [];
 messages = messages
   .filter((m) => m && typeof m.text === "string" && typeof m.name === "string")
   .slice(-100);
-function renderChat() {
-  $("#chat-log").innerHTML =
-    '<p class="chat-day">EXAMPLE CONVERSATION</p>' +
-    [...DEMO_CHAT, ...messages]
-      .map((m, i) => {
-        const t = SEEDS.find((t) => t.url === m.track);
-        return `<article class="chat-message"><span class="avatar tone-${i % 3}" aria-hidden="true">${esc(m.name.slice(0, 1))}</span><div><div class="chat-author">${esc(m.name)} <time>${esc(m.time || "")}</time></div><p>${esc(m.text)}</p>${t ? `<button type="button" class="chat-track" data-url="${esc(t.url)}" aria-label="Play ${esc(t.title)}">${imageHtml(t)}<span><strong>${esc(t.title)}</strong><small>${esc(t.artist)}</small></span><span aria-hidden="true">▶</span></button>` : ""}</div></article>`;
-      })
-      .join("");
+const chatUi = {
+  live: false,
+  rev: 0,
+  list: [],
+  settings: { locked: false, slowSeconds: 0 },
+  viewer: { banned: false, mutedUntil: 0 },
+  reported: new Set(),
+  failures: 0,
+  timer: 0,
+  sending: false,
+};
+const clock = (ts) =>
+  new Date(ts).toLocaleTimeString([], {
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+  });
+const nearBottom = () => {
+  const el = $("#chat-log");
+  return el.scrollHeight - el.scrollTop - el.clientHeight < 80;
+};
+
+// Visitor-supplied names and text are escaped with esc() before they reach
+// innerHTML. Ids and timestamps come from the room server as numbers.
+function renderChat(forceScroll = false) {
+  const log = $("#chat-log");
+  const stick = forceScroll || nearBottom();
+  if (!chatUi.live) {
+    log.innerHTML =
+      '<p class="chat-day">EXAMPLE CONVERSATION</p>' +
+      [...DEMO_CHAT, ...messages]
+        .map((m, i) => {
+          const t = SEEDS.find((t) => t.url === m.track);
+          return `<article class="chat-message"><span class="avatar tone-${i % 3}" aria-hidden="true">${esc(m.name.slice(0, 1))}</span><div><div class="chat-author">${esc(m.name)} <time>${esc(m.time || "")}</time></div><p>${esc(m.text)}</p>${t ? `<button type="button" class="chat-track" data-url="${esc(t.url)}" aria-label="Play ${esc(t.title)}">${imageHtml(t)}<span><strong>${esc(t.title)}</strong><small>${esc(t.artist)}</small></span><span aria-hidden="true">▶</span></button>` : ""}</div></article>`;
+        })
+        .join("");
+  } else {
+    log.innerHTML = chatUi.list.length
+      ? chatUi.list
+          .map((m, i) => {
+            const reported = chatUi.reported.has(m.id);
+            const flag = m.own
+              ? ""
+              : `<button type="button" class="chat-report" data-report="${m.id}" ${reported ? "disabled" : ""} aria-label="Report this message from ${esc(m.name)}">${reported ? "Reported" : "Report"}</button>`;
+            return `<article class="chat-message${m.held ? " is-held" : ""}"><span class="avatar tone-${m.id % 3}" aria-hidden="true">${esc(m.name.slice(0, 1))}</span><div><div class="chat-author">${esc(m.name)}${m.mod ? ' <span class="chat-badge">Organizer</span>' : ""} <time>${esc(clock(m.ts))}</time>${flag}</div><p>${esc(m.text)}</p>${m.held ? '<p class="chat-held">Only you can see this until a moderator approves it.</p>' : ""}</div></article>`;
+          })
+          .join("")
+      : '<p class="chat-empty">No messages yet. Say hello.</p>';
+  }
+  if (stick) log.scrollTop = log.scrollHeight;
+  renderChatState();
 }
-$("#chat-form").addEventListener("submit", (e) => {
+
+function renderChatState() {
+  const chip = $("#chat-state");
+  chip.textContent = chatUi.live ? "Live" : "Preview";
+  chip.dataset.live = String(chatUi.live);
+  chip.title = chatUi.live
+    ? "Everyone in the room sees these messages."
+    : "Example conversation. New messages are saved in this browser only.";
+  const { locked, slowSeconds } = chatUi.settings;
+  const { banned, mutedUntil } = chatUi.viewer;
+  const muted = mutedUntil > Date.now();
+  const notice = $("#chat-notice");
+  let text = "";
+  if (chatUi.live) {
+    if (banned) text = "You can no longer post in this room.";
+    else if (muted)
+      text = `A moderator has paused your messages until ${clock(mutedUntil)}.`;
+    else if (locked) text = "Chat is paused by the organizers.";
+    else if (slowSeconds)
+      text = `Slow mode: one message every ${slowSeconds} seconds.`;
+  }
+  notice.textContent = text;
+  notice.hidden = !text;
+  const blocked = chatUi.live && (banned || muted || locked);
+  $("#chat-input").disabled = blocked;
+  $("#chat-form button[type=submit]").disabled = blocked;
+  if (!chatUi.sending && !$("#chat-status").dataset.error)
+    $("#chat-status").textContent = chatUi.live
+      ? "Be kind. Moderators can remove messages."
+      : "Messages stay in this browser.";
+}
+
+function chatError(text) {
+  const el = $("#chat-status");
+  el.textContent = text;
+  el.dataset.error = "1";
+  clearTimeout(chatError.t);
+  chatError.t = setTimeout(() => {
+    delete el.dataset.error;
+    renderChatState();
+  }, 6000);
+}
+
+async function chatFetch(path, options) {
+  const ctl = new AbortController();
+  const t = setTimeout(() => ctl.abort(), 6000);
+  try {
+    return await fetch(CHAT_API + path, { ...options, signal: ctl.signal });
+  } finally {
+    clearTimeout(t);
+  }
+}
+
+async function pollChat() {
+  clearTimeout(chatUi.timer);
+  let delay = 2500;
+  try {
+    const res = await chatFetch(
+      `/api/chat?client=${encodeURIComponent(clientId)}&since=${chatUi.live ? chatUi.rev : ""}`,
+    );
+    const data = await res.json();
+    if (!res.ok || typeof data.rev !== "number")
+      throw new Error("bad response");
+    chatUi.failures = 0;
+    const wasLive = chatUi.live;
+    chatUi.live = true;
+    chatUi.settings = data.settings || chatUi.settings;
+    chatUi.viewer = data.viewer || chatUi.viewer;
+    if (data.changed !== false) {
+      chatUi.rev = data.rev;
+      chatUi.list = data.messages || [];
+      renderChat(!wasLive);
+    } else renderChatState();
+  } catch {
+    chatUi.failures += 1;
+    if (chatUi.live && chatUi.failures >= 3) {
+      chatUi.live = false;
+      renderChat();
+    }
+    delay = Math.min(30000, 4000 * 2 ** Math.min(chatUi.failures, 3));
+  }
+  if (document.visibilityState === "hidden") delay = Math.max(delay, 10000);
+  chatUi.timer = setTimeout(pollChat, delay);
+}
+
+$("#chat-form").addEventListener("submit", async (e) => {
   e.preventDefault();
+  if (chatUi.sending) return;
   const name = $("#chat-name").value.trim(),
     text = $("#chat-input").value.trim();
   if (!text || !name) return;
-  messages.push({
-    name,
-    text,
-    time: new Date().toLocaleTimeString([], {
-      hour: "2-digit",
-      minute: "2-digit",
-      hour12: false,
-    }),
-  });
-  messages = messages.slice(-100);
-  const persisted = save(CHAT_STORE, messages);
   save(NAME_STORE, name);
-  renderChat();
-  $("#chat-input").value = "";
-  $("#chat-log").scrollTop = $("#chat-log").scrollHeight;
-  $("#chat-status").textContent = persisted
-    ? "Messages stay in this browser."
-    : "Sent for this visit. Browser storage is unavailable.";
+  if (!chatUi.live) {
+    messages.push({ name, text, time: clock(Date.now()) });
+    messages = messages.slice(-100);
+    const persisted = save(CHAT_STORE, messages);
+    renderChat(true);
+    $("#chat-input").value = "";
+    $("#chat-status").textContent = persisted
+      ? "Messages stay in this browser."
+      : "Sent for this visit. Browser storage is unavailable.";
+    return;
+  }
+  chatUi.sending = true;
+  $("#chat-status").textContent = "Sending…";
+  try {
+    const res = await chatFetch("/api/chat", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ name, text, clientId }),
+    });
+    const data = await res.json().catch(() => ({}));
+    if (res.ok && data.ok) {
+      $("#chat-input").value = "";
+      if (data.status === "held")
+        chatError("Sent. A moderator will look at it before others see it.");
+      chatUi.rev = 0;
+      await pollChat();
+      renderChat(true);
+    } else {
+      const wait = data.retryAfterMs
+        ? ` Try again in ${Math.max(1, Math.ceil(data.retryAfterMs / 1000))}s.`
+        : "";
+      chatError(
+        (data.error || "Could not send that.") +
+          (data.retryAfterMs ? wait : ""),
+      );
+    }
+  } catch {
+    chatError("Could not reach the room. Your message is still here.");
+  } finally {
+    chatUi.sending = false;
+    renderChatState();
+  }
 });
 $("#chat-input").addEventListener("keydown", (e) => {
   if (e.key === "Enter" && !e.shiftKey && !e.isComposing) {
@@ -628,12 +796,29 @@ $("#chat-input").addEventListener("keydown", (e) => {
     $("#chat-form").requestSubmit();
   }
 });
-$("#chat-log").addEventListener("click", (e) => {
+$("#chat-log").addEventListener("click", async (e) => {
+  const flag = e.target.closest("[data-report]");
+  if (flag) {
+    const id = Number(flag.dataset.report);
+    chatUi.reported.add(id);
+    flag.disabled = true;
+    flag.textContent = "Reported";
+    chatFetch("/api/chat/report", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ id, clientId }),
+    }).catch(() => {});
+    return;
+  }
   const b = e.target.closest("[data-url]");
   if (b) {
     const index = tracks.findIndex((t) => t.url === b.dataset.url);
     if (index >= 0) play(index);
   }
 });
+document.addEventListener("visibilitychange", () => {
+  if (document.visibilityState === "visible") pollChat();
+});
 showSelected();
 renderChat();
+pollChat();

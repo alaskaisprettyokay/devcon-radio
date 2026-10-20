@@ -1,0 +1,237 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <meta name="robots" content="noindex,nofollow" />
+    <meta name="referrer" content="no-referrer" />
+    <meta name="theme-color" content="#101210" />
+    <title>Devcon Radio · Moderator desk</title>
+    <style>
+      @font-face {
+        font-family: Poppins;
+        src: url("./assets/poppins-latin-400.woff2") format("woff2");
+        font-weight: 400;
+        font-display: swap;
+      }
+      @font-face {
+        font-family: Poppins;
+        src: url("./assets/poppins-latin-600.woff2") format("woff2");
+        font-weight: 600;
+        font-display: swap;
+      }
+      :root {
+        --bg: #160f2e;
+        --panel: #21163f;
+        --line: #3a2d63;
+        --ink: #f4f1ff;
+        --muted: #a79fc4;
+        --accent: #8b5cf6;
+        --danger: #ff6b81;
+        --ok: #5fd39b;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      [hidden] {
+        display: none !important;
+      }
+      body {
+        margin: 0;
+        background: var(--bg);
+        color: var(--ink);
+        font:
+          400 15px/1.45 Poppins,
+          system-ui,
+          sans-serif;
+      }
+      main {
+        max-width: 980px;
+        margin: 0 auto;
+        padding: 20px 16px 64px;
+      }
+      h1 {
+        font-size: 20px;
+        margin: 0;
+      }
+      h2 {
+        font-size: 12px;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--muted);
+        margin: 28px 0 10px;
+        font-weight: 600;
+      }
+      header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        padding-bottom: 14px;
+        border-bottom: 1px solid var(--line);
+      }
+      .status {
+        font-size: 13px;
+        color: var(--muted);
+      }
+      .status b {
+        color: var(--ok);
+        font-weight: 600;
+      }
+      .status b.warn {
+        color: var(--danger);
+      }
+      button,
+      input,
+      select {
+        font: inherit;
+        color: var(--ink);
+      }
+      input,
+      select {
+        background: #120b27;
+        border: 1px solid var(--line);
+        padding: 10px 12px;
+        min-height: 44px;
+      }
+      button {
+        background: transparent;
+        border: 1px solid var(--line);
+        padding: 8px 12px;
+        min-height: 44px;
+        cursor: pointer;
+      }
+      button:hover,
+      button:focus-visible {
+        border-color: var(--accent);
+        outline: none;
+      }
+      button.primary {
+        background: var(--accent);
+        border-color: var(--accent);
+      }
+      button.danger {
+        color: var(--danger);
+        border-color: #6b2c3a;
+      }
+      button[aria-pressed="true"] {
+        background: var(--danger);
+        border-color: var(--danger);
+        color: #1a0b10;
+        font-weight: 600;
+      }
+      .login {
+        display: flex;
+        gap: 8px;
+        margin-top: 40px;
+        max-width: 480px;
+      }
+      .login input {
+        flex: 1;
+      }
+      .controls {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        align-items: center;
+      }
+      .controls label {
+        color: var(--muted);
+        font-size: 13px;
+      }
+      ul {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+        display: grid;
+        gap: 8px;
+      }
+      li.item {
+        background: var(--panel);
+        border: 1px solid var(--line);
+        padding: 12px;
+        display: grid;
+        gap: 8px;
+      }
+      li.held {
+        border-color: #a8791f;
+      }
+      .meta {
+        font-size: 12px;
+        color: var(--muted);
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px 12px;
+      }
+      .why {
+        color: #ffc46b;
+      }
+      .text {
+        overflow-wrap: anywhere;
+        white-space: pre-wrap;
+      }
+      .actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+      .empty {
+        color: var(--muted);
+        padding: 8px 0;
+      }
+      .toast {
+        position: fixed;
+        left: 50%;
+        bottom: 16px;
+        transform: translateX(-50%);
+        background: var(--panel);
+        border: 1px solid var(--line);
+        padding: 10px 16px;
+        max-width: 90vw;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <header>
+        <h1>Moderator desk</h1>
+        <span class="status" id="status" role="status"></span>
+      </header>
+      <form id="login" class="login" autocomplete="off" hidden>
+        <input
+          id="token"
+          type="password"
+          placeholder="Moderator token"
+          aria-label="Moderator token"
+          required
+        />
+        <button class="primary" type="submit">Open desk</button>
+      </form>
+      <div id="desk" hidden>
+        <h2>Room controls</h2>
+        <div class="controls">
+          <button id="lock" type="button" aria-pressed="false">
+            Pause chat
+          </button>
+          <label for="slow">Slow mode</label>
+          <select id="slow" aria-label="Slow mode">
+            <option value="0">Off</option>
+            <option value="5">5 seconds</option>
+            <option value="15">15 seconds</option>
+            <option value="30">30 seconds</option>
+            <option value="60">1 minute</option>
+          </select>
+          <button id="signout" type="button">Sign out</button>
+        </div>
+        <h2>Held for review <span id="held-count"></span></h2>
+        <ul id="held"></ul>
+        <h2>Live chat</h2>
+        <ul id="recent"></ul>
+        <h2>Muted and banned</h2>
+        <ul id="people"></ul>
+      </div>
+    </main>
+    <div id="toast" class="toast" role="status" hidden></div>
+    <script src="./mod.js" defer></script>
+  </body>
+</html>
