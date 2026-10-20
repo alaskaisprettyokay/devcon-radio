@@ -7,7 +7,7 @@ const out = path.resolve(__dirname, "../.test-results");
 fs.mkdirSync(out, { recursive: true });
 
 (async () => {
-  const server = createServer();
+  const server = createServer({ chatangoRoom: "off" });
   await new Promise((resolve) => server.listen(0, "127.0.0.1", resolve));
   const base = `http://127.0.0.1:${server.address().port}`;
   const browser = await chromium.launch({

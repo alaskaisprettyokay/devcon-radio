@@ -3,7 +3,9 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
-    <meta name="theme-color" content="#101210" />
+    <meta name="theme-color" content="#1a0d33" />
+    <meta name="chat-api" content="" />
+    <meta name="chatango-room" content="devcon" />
     <meta
       name="description"
       content="The sound of Devcon. Bring two tracks. Find something new."
@@ -22,8 +24,8 @@
       as="image"
       fetchpriority="high"
     />
-    <link rel="stylesheet" href="./style.css?v=devcon-brand-1" />
-    <script src="./app.js?v=devcon-brand-1" defer></script>
+    <link rel="stylesheet" href="./style.css?v=room-2" />
+    <script src="./app.js?v=room-2" defer></script>
   </head>
   <body>
     <main class="stage">
@@ -142,12 +144,11 @@
               <span class="chat-symbol" aria-hidden="true">↳</span>
               <h2 id="chat-title">The room</h2>
             </div>
-            <span
-              class="demo-label"
-              title="Example conversation. New messages are saved in this browser."
-              >Chat preview</span
+            <span id="chat-state" class="chat-state" data-live="false"
+              >Preview</span
             >
           </header>
+          <div id="chatango-mount" class="chatango-mount" hidden></div>
           <div
             class="chat-log"
             id="chat-log"
@@ -155,6 +156,7 @@
             aria-label="Room conversation"
             aria-live="polite"
           ></div>
+          <p id="chat-notice" class="chat-notice" role="status" hidden></p>
           <form id="chat-form" class="chat-form" autocomplete="off">
             <input
               id="chat-name"
