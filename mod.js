@@ -107,7 +107,7 @@ function render(q) {
 
 async function refresh() {
   try {
-    render(await call("/api/mod/queue"));
+    render(await call("./api/mod/queue"));
   } catch (e) {
     if (e.message !== "unauthorized")
       $("#status").textContent = "Connection lost. Retrying…";
@@ -139,7 +139,7 @@ $("#login").addEventListener("submit", async (e) => {
   token = $("#token").value.trim();
   $("#token").value = "";
   try {
-    await call("/api/mod/queue");
+    await call("./api/mod/queue");
     sessionStorage.setItem(KEY, token);
     open();
   } catch {
@@ -157,11 +157,11 @@ $("#desk").addEventListener("click", async (e) => {
   if (act === "ban" && !confirm("Ban this device and remove all its messages?"))
     return;
   const calls = {
-    approve: ["/api/mod/approve", { id }],
-    delete: ["/api/mod/delete", { id }],
-    mute: ["/api/mod/mute", { clientId, minutes: 10 }],
-    ban: ["/api/mod/ban", { clientId }],
-    unmute: ["/api/mod/unmute", { clientId }],
+    approve: ["./api/mod/approve", { id }],
+    delete: ["./api/mod/delete", { id }],
+    mute: ["./api/mod/mute", { clientId, minutes: 10 }],
+    ban: ["./api/mod/ban", { clientId }],
+    unmute: ["./api/mod/unmute", { clientId }],
   }[act];
   btn.disabled = true;
   try {
@@ -183,11 +183,11 @@ $("#desk").addEventListener("click", async (e) => {
 
 $("#lock").addEventListener("click", async () => {
   const next = $("#lock").getAttribute("aria-pressed") !== "true";
-  await call("/api/mod/settings", { locked: next });
+  await call("./api/mod/settings", { locked: next });
   refresh();
 });
 $("#slow").addEventListener("change", async (e) => {
-  await call("/api/mod/settings", { slowSeconds: Number(e.target.value) });
+  await call("./api/mod/settings", { slowSeconds: Number(e.target.value) });
   refresh();
 });
 $("#signout").addEventListener("click", () => signOut(""));

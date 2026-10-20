@@ -586,9 +586,13 @@ const DEMO_CHAT = [
 /* Chat. Talks to the room server when it is reachable, otherwise shows the
    browser-only preview so a static copy of the page still works. */
 const CLIENT_KEY = "devcon-chat-client-v1";
-const CHAT_API = (
-  document.querySelector('meta[name="chat-api"]')?.content || ""
-).replace(/\/$/, "");
+// Empty means "the server that served this page", resolved relative to it so
+// the app also works under a path prefix such as /previews/devcon-radio/.
+const CHAT_API =
+  (document.querySelector('meta[name="chat-api"]')?.content || "").replace(
+    /\/$/,
+    "",
+  ) || ".";
 let clientId = read(CLIENT_KEY, "");
 if (typeof clientId !== "string" || clientId.length < 16) {
   clientId =
